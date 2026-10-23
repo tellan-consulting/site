@@ -8,14 +8,26 @@ const FORM_ACTION = 'https://example.com/forms/tellan-contact';
 <Base title="Contact" description="Contact Tellan.">
   <section class="container page">
     <h1>Contact</h1>
+    <p>
+      A consultation with us means our full attention to your operation. We take on a small number
+      of clients at a time. Tell us a bit about your company, and we'll be in touch shortly.
+    </p>
 
     <form class="form" method="post" action={FORM_ACTION}>
+      <div class="field">
+        <label for="name">Name</label>
+        <input id="name" name="name" type="text" autocomplete="name" required />
+      </div>
+      <div class="field">
+        <label for="company">Company</label>
+        <input id="company" name="company" type="text" autocomplete="organization" required />
+      </div>
       <div class="field">
         <label for="email">Email</label>
         <input id="email" name="email" type="email" autocomplete="email" required />
       </div>
       <div class="field">
-        <label for="message">Message</label>
+        <label for="message">What can we do?</label>
         <textarea id="message" name="message" rows="4" required></textarea>
       </div>
       <button class="button" type="submit">Send</button>
