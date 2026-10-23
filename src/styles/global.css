@@ -1,0 +1,174 @@
+/* ---------- Tokens ---------- */
+:root {
+  color-scheme: dark;
+
+  /* Palette — use only these. Contrast vs --black: ash 5.87, ash-light 11.92, white 17.65. */
+  --black: #0a0a0a;
+  --charcoal: #1a1a1a;
+  --ash-dark: #3a3a3a;
+  --ash: #8c8c88;
+  --ash-light: #c9c9c5;
+  --white: #f2f2ef;
+
+  --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
+    'Noto Sans', sans-serif;
+
+  --step--1: 0.875rem;
+  --step-0: 1.0625rem; /* 17px body */
+  --step-1: clamp(2.25rem, 1.6rem + 2.8vw, 3.5rem);
+
+  --space-1: 0.5rem;
+  --space-2: 1rem;
+  --space-3: 2rem;
+  --space-4: 4rem;
+  --space-5: 8rem;
+
+  --measure: 60ch;
+  --content-width: 64rem;
+  --gutter: clamp(1.25rem, 5vw, 3rem);
+}
+
+/* ---------- Reset ---------- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+* {
+  margin: 0;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: var(--black);
+  color: var(--ash-light);
+  font-family: var(--font-sans);
+  font-size: var(--step-0);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+main {
+  flex: 1;
+}
+
+svg {
+  display: block;
+}
+
+input,
+button,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+/* ---------- Typography ---------- */
+h1 {
+  max-width: 18ch;
+  color: var(--white);
+  font-size: var(--step-1);
+  font-weight: 500;
+  line-height: 1.05;
+  letter-spacing: -0.035em;
+  text-wrap: balance;
+}
+
+p {
+  max-width: var(--measure);
+  text-wrap: pretty;
+}
+
+a {
+  color: var(--white);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.25em;
+}
+
+/* ---------- Accessibility ---------- */
+:focus-visible {
+  outline: 1px solid var(--white);
+  outline-offset: 4px;
+}
+
+.skip-link {
+  position: absolute;
+  top: var(--space-1);
+  left: var(--space-1);
+  z-index: 100;
+  padding: var(--space-1) var(--space-2);
+  background: var(--white);
+  color: var(--black);
+  transform: translateY(-200%);
+}
+
+.skip-link:focus-visible {
+  transform: none;
+}
+
+/* ---------- Layout ---------- */
+.container {
+  width: 100%;
+  max-width: var(--content-width);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+.page {
+  display: grid;
+  gap: var(--space-3);
+  padding-block: var(--space-5) var(--space-4);
+}
+
+/* ---------- Controls ---------- */
+.button {
+  justify-self: start;
+  padding: 0.75em 1.5em;
+  border: 1px solid var(--white);
+  border-radius: 0;
+  background: transparent;
+  color: var(--white);
+  font-size: var(--step--1);
+  line-height: 1.2;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.button:hover {
+  background: var(--white);
+  color: var(--black);
+}
+
+.field {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.field label {
+  color: var(--ash);
+  font-size: var(--step--1);
+}
+
+.field input,
+.field textarea {
+  width: 100%;
+  padding: 0.75em 0.9em;
+  background: var(--charcoal);
+  border: 1px solid var(--ash-dark);
+  border-radius: 0;
+  color: var(--ash-light);
+}
+
+.field input:focus-visible,
+.field textarea:focus-visible {
+  outline-offset: 0;
+}

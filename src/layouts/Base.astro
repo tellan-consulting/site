@@ -1,0 +1,139 @@
+---
+import { getImage } from 'astro:assets';
+import Logo from '../assets/logo.svg';
+import { HOME_TITLE, NAV_LINKS, SITE_DESCRIPTION, SITE_NAME } from '../consts';
+import defaultOgImage from '../assets/og-default.jpg';
+import '../styles/global.css';
+
+interface Props {
+  /** Page name; rendered as "<title> | Tellan". Omit on the home page. */
+  title?: string;
+  description?: string;
+  /** Social card image (imported from src/assets). Defaults to og-default.jpg. */
+  image?: ImageMetadata;
+  lang?: string;
+  noindex?: boolean;
+}
+
+const {
+  title,
+  description = SITE_DESCRIPTION,
+  image = defaultOgImage,
+  lang = 'en',
+  noindex = false,
+} = Astro.props;
+
+const pageTitle = title ? `${title} | ${SITE_NAME}` : HOME_TITLE;
+const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+const ogImage = await getImage({ src: image, width: 1200, height: 630, format: 'jpg' });
+const ogImageURL = new URL(ogImage.src, Astro.site);
+const currentPath = Astro.url.pathname.replace(/\/$/, '') || '/';
+---
+
+<!doctype html>
+<html lang={lang}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{pageTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonicalURL} />
+    {noindex && <meta name="robots" content="noindex" />}
+
+    <meta name="color-scheme" content="dark" />
+    <meta name="theme-color" content="#0a0a0a" />
+
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={SITE_NAME} />
+    <meta property="og:url" content={canonicalURL} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={ogImageURL} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={pageTitle} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImageURL} />
+
+    <slot name="head" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <header class="container site-header">
+      <a class="brand" href="/" aria-label={`${SITE_NAME} home`}>
+        <Logo width={68} height={20} aria-hidden="true" />
+      </a>
+      <nav aria-label="Primary">
+        <ul>
+          {
+            NAV_LINKS.map(({ href, label }) => (
+              <li>
+                <a href={href} aria-current={currentPath === href ? 'page' : undefined}>
+                  {label}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </nav>
+    </header>
+
+    <main id="main" tabindex="-1">
+      <slot />
+    </main>
+
+    <footer class="container">
+      <p class="site-footer">&copy; {new Date().getFullYear()} {SITE_NAME}</p>
+    </footer>
+  </body>
+</html>
+
+<style>
+  .site-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    padding-block: var(--space-3);
+  }
+
+  .brand {
+    display: inline-block;
+  }
+
+  nav ul {
+    display: flex;
+    gap: var(--space-3);
+    padding: 0;
+    list-style: none;
+  }
+
+  nav a {
+    color: var(--ash);
+    font-size: var(--step--1);
+    text-decoration: none;
+  }
+
+  nav a:hover,
+  nav a[aria-current='page'] {
+    color: var(--white);
+  }
+
+  main:focus {
+    outline: none;
+  }
+
+  .site-footer {
+    max-width: none;
+    padding-block: var(--space-3);
+    border-top: 1px solid var(--ash-dark);
+    color: var(--ash);
+    font-size: var(--step--1);
+  }
+</style>

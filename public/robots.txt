@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://tellan-consulting.com/sitemap-index.xml
