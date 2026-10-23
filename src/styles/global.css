@@ -21,7 +21,6 @@
   --space-2: 1rem;
   --space-3: 2rem;
   --space-4: 4rem;
-  --space-5: 8rem;
 
   --measure: 60ch;
   --content-width: 64rem;
@@ -40,6 +39,8 @@
 }
 
 html {
+  /* Reserve scrollbar space so taller pages (contact) don't shift sideways vs. short ones. */
+  scrollbar-gutter: stable;
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
 }
@@ -126,7 +127,7 @@ a {
 .page {
   display: grid;
   gap: var(--space-3);
-  padding-block: var(--space-5) var(--space-4);
+  padding-block: clamp(var(--space-4), 3rem + 4vw, 6rem) var(--space-4);
 }
 
 /* ---------- Controls ---------- */

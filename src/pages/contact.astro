@@ -1,13 +1,32 @@
 ---
 import Base from '../layouts/Base.astro';
+
+// TODO: point at the real form handler (e.g. Formspree, Basin, or a serverless endpoint).
+const FORM_ACTION = 'https://example.com/forms/tellan-contact';
 ---
 
 <Base title="Contact" description="Contact Tellan.">
   <section class="container page">
     <h1>Contact</h1>
-    <p>
-      Grant Reames, CEO<br />
-      Hays Burns, CTO
-    </p>
+
+    <form class="form" method="post" action={FORM_ACTION}>
+      <div class="field">
+        <label for="email">Email</label>
+        <input id="email" name="email" type="email" autocomplete="email" required />
+      </div>
+      <div class="field">
+        <label for="message">Message</label>
+        <textarea id="message" name="message" rows="4" required></textarea>
+      </div>
+      <button class="button" type="submit">Send</button>
+    </form>
   </section>
 </Base>
+
+<style>
+  .form {
+    display: grid;
+    gap: var(--space-2);
+    max-width: 28rem;
+  }
+</style>

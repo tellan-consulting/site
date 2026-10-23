@@ -1,0 +1,33 @@
+---
+import Base from '../layouts/Base.astro';
+---
+
+<Base title="Team" description="The team behind Tellan.">
+  <section class="container page">
+    <h1>Team</h1>
+    <p>
+      We're a team of two: an engineer and an accountant. We work directly with you, and every
+      decision is based on your numbers.
+    </p>
+    <ul class="people" role="list">
+      <li>Grant Reames, <span>CEO</span></li>
+      <li>Hays Burns, <span>CTO</span></li>
+    </ul>
+  </section>
+</Base>
+
+<style>
+  .people {
+    display: grid;
+    gap: var(--space-1);
+    margin-left: var(--space-2);
+    padding: 0 0 0 var(--space-2);
+    border-left: 1px solid var(--ash-dark);
+    list-style: none;
+    color: var(--white);
+  }
+
+  .people span {
+    color: var(--ash);
+  }
+</style>
