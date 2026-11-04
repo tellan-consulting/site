@@ -27,7 +27,7 @@ vercel login
 
 # 1. Push to GitHub (first time only)
 git init && git add -A && git commit -m "feat: scaffold astro site"
-gh repo create haysburns4/tellan-site --private --source=. --push
+gh repo create tellan-consulting/tellan-site --private --source=. --push
 
 # 2. Link and deploy
 vercel link            # create a new project, e.g. "tellan-site"
