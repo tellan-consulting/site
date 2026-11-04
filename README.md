@@ -1,59 +1,81 @@
 # Tellan site
 
-Static Astro site tuned for page speed.
+Website for [tellan-consulting.com](https://tellan-consulting.com). Static
+[Astro](https://astro.build) build, deployed on Vercel.
+
+## Development
 
 ```sh
-npm run dev      # local dev server
+npm install
+npm run dev      # local dev server at http://localhost:4321
 npm run build    # astro check + static build to dist/
 npm run preview  # serve dist/
 ```
 
-## Before launch
+## Layout
 
-- Production origin is `https://tellan-consulting.com` (`site` in `astro.config.mjs` and the `Sitemap:` line in `public/robots.txt`); change both together if it moves.
-- Resolve the `TODO` comments in `src/pages/*.astro` and `src/consts.ts` (placeholder copy).
-- `src/assets/og-default.jpg` (1200×630) is a generated wordmark card; swap in final artwork if needed.
+```
+src/
+  pages/        index, team, contact (one .astro file per route)
+  layouts/      Base.astro: <head>, meta/OG tags, header and footer
+  styles/       global.css: design tokens and base styles
+  assets/       images and SVGs processed at build time
+  consts.ts     site name, titles, meta description, nav links
+public/         copied as-is (favicon, robots.txt, _headers)
+```
+<!-- 
+## Deployment
 
-## Deploying to Vercel
+The site is hosted on Vercel as the `tellan-site` project, with no env vars and no
+functions. [`vercel.json`](vercel.json) sets the framework and build command, plus the
+cache and security headers.
 
-One static project: no env vars, no functions, no Root Directory setting. Config lives in
-[`vercel.json`](vercel.json) — framework, build command, and the immutable cache header for
-`/_astro/*` (Vercel ignores `public/_headers`, which is kept for Cloudflare Pages / Netlify).
+With the project connected to this repo, pushes to `main` deploy to production and
+pull requests get preview deploys. To deploy by hand from a fresh clone:
 
 ```sh
-# 0. Use a current Vercel CLI
 npm i -g vercel@latest
 vercel login
-
-# 1. Push to GitHub (first time only)
-git init && git add -A && git commit -m "feat: scaffold astro site"
-gh repo create tellan-consulting/tellan-site --private --source=. --push
-
-# 2. Link and deploy
-vercel link            # create a new project, e.g. "tellan-site"
-vercel                 # preview deploy
-vercel --prod          # production
+vercel link --project tellan-site
+vercel          # preview
+vercel --prod   # production
 ```
 
-Connecting the GitHub repo during `vercel link` gives preview deploys on every PR and
-production deploys on merges to `main`. Attach the domain with `vercel domains add tellan-consulting.com` (and `www.tellan-consulting.com`,
-redirected to the apex in the Vercel dashboard), then point DNS at Vercel as the CLI instructs.
-
-Smoke test after deploying:
+After a deploy, check that build assets are cached immutably:
 
 ```sh
-curl -sI https://tellan-consulting.com/_astro/<any-file> | grep -i cache-control   # → public, max-age=31536000, immutable
+curl -sI https://tellan-consulting.com/_astro/<any-file> | grep -i cache-control
+# → public, max-age=31536000, immutable
 ```
+
+The production origin is `https://tellan-consulting.com`. It's set in
+`astro.config.mjs` (`site`) and in the `Sitemap:` line of `public/robots.txt`, so if it
+changes, update both together.
+
+## Before launch
+
+- [ ] Final meta description: `src/consts.ts`
+- [ ] Final positioning line: `src/pages/index.astro`
+- [ ] Wire the contact form to a real handler: `src/pages/contact.astro`
+- [ ] Replace the generated wordmark card at `src/assets/og-default.jpg` (1200×630) with final artwork, if needed
 
 ## Performance rules
 
-- **Zero JS by default.** The only script shipped is Astro's ~2.5 KB prefetch helper. Interactive
-  components are React islands with `client:visible` / `client:idle` (`client:load` only above the fold).
-- **Images** live in `src/assets` and render via `<Picture formats={['avif', 'webp']} widths={…} sizes="…">`.
-  Only the hero is `loading="eager" fetchpriority="high"`; everything else is `loading="lazy"`.
-- **Logos/icons** are SVG (`src/assets/logo.svg`, imported as a component; `public/favicon.svg`).
-- **Fonts:** system stack in `src/styles/global.css`. If a brand font is needed, self-host one
-  variable woff2 with `font-display: swap` and a `<link rel="preload">` for it — no Google Fonts links.
-- **CSS:** tokens + base styles in `src/styles/global.css`, scoped `<style>` in components. No Tailwind or CSS-in-JS.
-- **No third-party scripts.** Analytics, if added, must be `defer` and under 5 KB.
-- `public/_headers` sets immutable caching for `/_astro/*` (Cloudflare Pages / Netlify).
+- **No client JS by default.** The only script shipped is Astro's prefetch helper. If
+  something needs interactivity, add it as a framework island with `client:visible` or
+  `client:idle`, and use `client:load` only for content above the fold.
+- **Images** go in `src/assets` and render with
+  `<Picture formats={['avif', 'webp']} widths={…} sizes="…">`. Only the hero image gets
+  `loading="eager" fetchpriority="high"`; everything else is `loading="lazy"`.
+- **Logos and icons** are SVG: `src/assets/logo.svg` is imported as a component, and the
+  favicon is `public/favicon.svg`.
+- **Fonts** use the system stack defined in `global.css`. If a brand font is needed,
+  self-host one variable woff2 with `font-display: swap` and a `<link rel="preload">`.
+  Don't link to Google Fonts.
+- **CSS** has tokens and base styles in `global.css`, with scoped `<style>` blocks in
+  components. No Tailwind or CSS-in-JS.
+- **No third-party scripts.** If analytics are added, the script must be `defer` and
+  under 5 KB.
+- `public/_headers` repeats the immutable `/_astro/*` cache rule for Cloudflare Pages
+  and Netlify. Vercel ignores that file and reads `vercel.json` instead.
+-->
