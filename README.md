@@ -1,15 +1,15 @@
 # Tellan site
 
 Website for [tellan-consulting.com](https://tellan-consulting.com). Static
-[Astro](https://astro.build) build, deployed on Vercel.
+[Astro](https://astro.build) build, deployed on Vercel. <!-- The one exception is the
+contact form handler, which runs as a Vercel Function. -->
 
 ## Development
 
 ```sh
 npm install
 npm run dev      # local dev server at http://localhost:4321
-npm run build    # astro check + static build to dist/
-npm run preview  # serve dist/
+npm run build    # astro check + build to .vercel/output
 ```
 
 ## Layout
@@ -17,6 +17,8 @@ npm run preview  # serve dist/
 ```
 src/
   pages/        index, team, contact (one .astro file per route)
+  pages/api/    contact.ts: contact form handler (the only on-demand route)
+  lib/          gmail.ts: sends mail through the Gmail API
   layouts/      Base.astro: <head>, meta/OG tags, header and footer
   styles/       global.css: design tokens and base styles
   assets/       images and SVGs processed at build time
@@ -26,9 +28,9 @@ public/         copied as-is (favicon, robots.txt, _headers)
 <!-- 
 ## Deployment
 
-The site is hosted on Vercel as the `tellan-site` project, with no env vars and no
-functions. [`vercel.json`](vercel.json) sets the framework and build command, plus the
-cache and security headers.
+The site is hosted on Vercel as the `tellan-site` project. The contact form handler is
+the only function (see Contact form for its env vars). [`vercel.json`](vercel.json) sets
+the framework and build command, plus the cache and security headers.
 
 With the project connected to this repo, pushes to `main` deploy to production and
 pull requests get preview deploys. To deploy by hand from a fresh clone:
@@ -56,7 +58,7 @@ changes, update both together.
 
 - [ ] Final meta description: `src/consts.ts`
 - [ ] Final positioning line: `src/pages/index.astro`
-- [ ] Wire the contact form to a real handler: `src/pages/contact.astro`
+- [x] Wire the contact form to a real handler: `src/pages/api/contact.ts`
 - [ ] Replace the generated wordmark card at `src/assets/og-default.jpg` (1200×630) with final artwork, if needed
 
 ## Performance rules

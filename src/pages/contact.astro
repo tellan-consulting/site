@@ -1,8 +1,6 @@
 ---
 import Base from '../layouts/Base.astro';
-
-// TODO: point at the real form handler (e.g. Formspree, Basin, or a serverless endpoint).
-const FORM_ACTION = 'https://example.com/forms/tellan-contact';
+import { CONTACT_LIMITS as max } from '../consts';
 ---
 
 <Base title="Contact" description="Contact Tellan.">
@@ -13,22 +11,39 @@ const FORM_ACTION = 'https://example.com/forms/tellan-contact';
       of clients at a time. Tell us a bit about your company, and we'll be in touch shortly.
     </p>
 
-    <form class="form" method="post" action={FORM_ACTION}>
+    <form class="form" method="post" action="/api/contact">
+      <!-- Shown via :target when /api/contact redirects to #send-error. -->
+      <p id="send-error" class="form-error">
+        Sorry, your message didn't go through. Please try again, or email us at
+        <a href="mailto:hello@tellan-consulting.com">hello@tellan-consulting.com</a>.
+      </p>
       <div class="field">
         <label for="name">Name</label>
-        <input id="name" name="name" type="text" autocomplete="name" required />
+        <input id="name" name="name" type="text" autocomplete="name" maxlength={max.name} required />
       </div>
       <div class="field">
         <label for="company">Company</label>
-        <input id="company" name="company" type="text" autocomplete="organization" required />
+        <input
+          id="company"
+          name="company"
+          type="text"
+          autocomplete="organization"
+          maxlength={max.company}
+          required
+        />
       </div>
       <div class="field">
         <label for="email">Email</label>
-        <input id="email" name="email" type="email" autocomplete="email" required />
+        <input id="email" name="email" type="email" autocomplete="email" maxlength={max.email} required />
       </div>
       <div class="field">
         <label for="message">What can we do?</label>
-        <textarea id="message" name="message" rows="4" required></textarea>
+        <textarea id="message" name="message" rows="4" maxlength={max.message} required></textarea>
+      </div>
+      <!-- Honeypot: hidden from people and screen readers. -->
+      <div class="hp" aria-hidden="true">
+        <label for="website">Website</label>
+        <input id="website" name="website" type="text" tabindex="-1" autocomplete="off" />
       </div>
       <button class="button" type="submit">Send</button>
     </form>
@@ -40,5 +55,25 @@ const FORM_ACTION = 'https://example.com/forms/tellan-contact';
     display: grid;
     gap: var(--space-2);
     max-width: 28rem;
+  }
+
+  .form-error {
+    display: none;
+    padding: 0.75em 0.9em;
+    border: 1px solid var(--ash);
+    color: var(--white);
+    font-size: var(--step--1);
+  }
+
+  .form-error:target {
+    display: block;
+  }
+
+  .hp {
+    position: absolute;
+    left: -10000px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
   }
 </style>
