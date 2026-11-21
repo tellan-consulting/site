@@ -1,0 +1,151 @@
+---
+import { Picture } from 'astro:assets';
+import {
+  formatPrice,
+  isSoldOut,
+  primaryPhoto,
+  productPath,
+  type Product,
+} from '../../lib/merch';
+
+interface Props {
+  product: Product;
+  /** Load eagerly for cards above the fold. */
+  eager?: boolean;
+}
+
+const { product, eager = false } = Astro.props;
+const { name, price, currency, variants, status } = product.data;
+const photo = primaryPhoto(product);
+const soldOut = isSoldOut(product);
+const variantNames = variants.map((v) => v.name).join(', ');
+---
+
+<article class="card">
+  <a class="card-link" href={productPath(product)}>
+    <div class="media">
+      <Picture
+        src={photo.src}
+        alt={photo.alt}
+        formats={['avif', 'webp']}
+        widths={[400, 600, 800]}
+        sizes="(min-width: 64rem) 19rem, (min-width: 40rem) 44vw, 90vw"
+        loading={eager ? 'eager' : 'lazy'}
+      />
+      {soldOut && <span class="badge">Sold out</span>}
+      {status === 'draft' && <span class="badge badge-draft">Draft</span>}
+    </div>
+    <div class="meta">
+      <h2 class="name">{name}</h2>
+      <p class="price">{formatPrice(price, currency)}</p>
+    </div>
+  </a>
+  {
+    variants.length > 1 && (
+      <p class="swatches">
+        <span class="visually-hidden">Available in {variantNames}</span>
+        {variants.map((v) => (
+          <span
+            class:list={['swatch', { unavailable: !v.available }]}
+            style={v.swatch ? `--swatch: ${v.swatch}` : undefined}
+            title={v.available ? v.name : `${v.name} (sold out)`}
+            aria-hidden="true"
+          />
+        ))}
+      </p>
+    )
+  }
+</article>
+
+<style>
+  .card {
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .card-link {
+    display: grid;
+    gap: var(--space-2);
+    text-decoration: none;
+  }
+
+  .media {
+    position: relative;
+    aspect-ratio: 1;
+    overflow: hidden;
+    background: var(--carbon);
+    border: 1px solid var(--ash-dark);
+  }
+
+  .media :global(img) {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 300ms ease;
+  }
+
+  .card-link:hover .media :global(img) {
+    transform: scale(1.03);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .media :global(img) {
+      transition: none;
+    }
+  }
+
+  .badge {
+    position: absolute;
+    top: var(--space-2);
+    left: var(--space-2);
+    padding: 0.2em 0.6em;
+    background: var(--porcelain);
+    color: var(--onyx);
+    font-size: 0.75rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .badge-draft {
+    left: auto;
+    right: var(--space-2);
+    background: var(--frozen-water);
+  }
+
+  .meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: var(--space-2);
+  }
+
+  .name {
+    color: var(--porcelain);
+    font-family: var(--font-display);
+    font-size: 1.125rem;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+  }
+
+  .price {
+    color: var(--ash);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .swatches {
+    display: flex;
+    gap: 0.4rem;
+  }
+
+  .swatch {
+    width: 0.8rem;
+    height: 0.8rem;
+    background: var(--swatch, var(--ash));
+    box-shadow: inset 0 0 0 1px rgb(251 254 249 / 0.25);
+  }
+
+  .swatch.unavailable {
+    opacity: 0.3;
+  }
+</style>

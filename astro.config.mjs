@@ -57,7 +57,18 @@ export default defineConfig({
         access: 'secret',
         default: 'hello@tellan-consulting.com',
       }),
+      // Merch (see docs/merch.md). Vercel sets VERCEL_ENV on every build.
+      VERCEL_ENV: envField.enum({
+        context: 'server',
+        access: 'public',
+        values: ['production', 'preview', 'development'],
+        optional: true,
+      }),
+      MERCH_SHOW_DRAFTS: envField.boolean({ context: 'server', access: 'public', default: false }),
+      MERCH_ALLOW_TEST_LINKS: envField.boolean({ context: 'server', access: 'public', default: false }),
     },
   },
-  integrations: [sitemap({ filter: (page) => !page.includes('/contact/thanks') })],
+  integrations: [
+    sitemap({ filter: (page) => !page.includes('/contact/thanks') && !page.includes('/merch/thanks') }),
+  ],
 });

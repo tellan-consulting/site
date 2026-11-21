@@ -1,0 +1,486 @@
+---
+import { Picture, getImage } from 'astro:assets';
+import { render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import {
+  defaultVariant,
+  formatPrice,
+  galleryPhotos,
+  getProducts,
+  isSoldOut,
+  productPath,
+  type Product,
+} from '../../lib/merch';
+
+export async function getStaticPaths() {
+  const products = await getProducts();
+  return products.map((product) => ({ params: { slug: product.id }, props: { product } }));
+}
+
+interface Props {
+  product: Product;
+}
+
+const { product } = Astro.props;
+const { name, summary, price, currency, variants, details, sizing } = product.data;
+const { Content } = await render(product);
+
+const pageUrl = new URL(productPath(product), Astro.site).href;
+const photos = galleryPhotos(product);
+const selected = defaultVariant(product);
+const soldOut = isSoldOut(product);
+const photoIndex = (v: (typeof variants)[number]) =>
+  v.image ? photos.findIndex((p) => p.src.src === v.image!.src.src) : -1;
+const activePhoto = Math.max(photoIndex(selected), 0);
+
+const absoluteImage = async (src: ImageMetadata) =>
+  new URL((await getImage({ src, width: 1200, format: 'jpg' })).src, Astro.site).href;
+
+// Structured data for search results: one ProductGroup with one Product per color.
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'ProductGroup',
+  name,
+  description: summary,
+  url: pageUrl,
+  productGroupID: product.id,
+  brand: { '@type': 'Brand', name: 'Tellan' },
+  variesBy: ['https://schema.org/color'],
+  hasVariant: await Promise.all(
+    variants.map(async (v) => ({
+      '@type': 'Product',
+      name: `${name} (${v.name})`,
+      sku: `${product.id}-${v.id}`,
+      color: v.name,
+      image: await absoluteImage((v.image ?? photos[0]).src),
+      offers: {
+        '@type': 'Offer',
+        url: `${pageUrl}?color=${v.id}`,
+        price: price.toFixed(2),
+        priceCurrency: currency,
+        availability: v.available ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+        itemCondition: 'https://schema.org/NewCondition',
+      },
+    })),
+  ),
+};
+const jsonLdHtml = JSON.stringify(jsonLd).replace(/</g, '\\u003c');
+---
+
+<Base title={name} description={summary} image={photos[activePhoto].src}>
+  <script slot="head" type="application/ld+json" set:html={jsonLdHtml} />
+
+  <section class="container page">
+    <nav class="crumbs" aria-label="Breadcrumb">
+      <a href="/merch">Merch</a>
+      <span aria-hidden="true">/</span>
+      <span aria-current="page">{name}</span>
+    </nav>
+
+    <div class="product" data-product>
+      <div class="gallery">
+        {
+          photos.map((photo, i) => (
+            <figure class="shot" id={`photo-${i}`} data-shot={i} hidden={i !== activePhoto}>
+              <Picture
+                src={photo.src}
+                alt={photo.alt}
+                formats={['avif', 'webp']}
+                widths={[600, 900, 1200]}
+                sizes="(min-width: 56rem) 31rem, 90vw"
+                loading={i === activePhoto ? 'eager' : 'lazy'}
+                fetchpriority={i === activePhoto ? 'high' : undefined}
+              />
+            </figure>
+          ))
+        }
+        {
+          photos.length > 1 && (
+            <ul class="thumbs" role="list">
+              {photos.map((photo, i) => (
+                <li>
+                  <button
+                    type="button"
+                    class="thumb"
+                    data-thumb={i}
+                    aria-controls={`photo-${i}`}
+                    aria-pressed={i === activePhoto ? 'true' : 'false'}
+                  >
+                    <Picture
+                      src={photo.src}
+                      alt=""
+                      formats={['avif', 'webp']}
+                      width={128}
+                      height={128}
+                      loading="lazy"
+                    />
+                    <span class="visually-hidden">Show photo: {photo.alt}</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )
+        }
+      </div>
+
+      <div class="info">
+        <h1>{name}</h1>
+        <p class="price">{formatPrice(price, currency)}</p>
+        <p class="summary">{summary}</p>
+
+        {
+          variants.length > 1 && (
+            <fieldset class="variants">
+              <legend>
+                Color: <span data-variant-label>{selected.name}</span>
+              </legend>
+              <div class="options">
+                {variants.map((v) => (
+                  <label class:list={['option', { unavailable: !v.available }]}>
+                    <input
+                      type="radio"
+                      name="variant"
+                      value={v.id}
+                      checked={v.id === selected.id}
+                      disabled={!v.available}
+                      data-link={v.available ? v.paymentLink : undefined}
+                      data-name={v.name}
+                      data-photo={photoIndex(v)}
+                    />
+                    <span
+                      class="swatch"
+                      style={v.swatch ? `--swatch: ${v.swatch}` : undefined}
+                      aria-hidden="true"
+                    />
+                    <span>
+                      {v.name}
+                      {!v.available && <span class="sold-out-note"> (sold out)</span>}
+                    </span>
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+          )
+        }
+
+        {
+          soldOut ? (
+            <p class="buy buy-disabled" role="status">
+              Sold out
+            </p>
+          ) : (
+            <a class="button buy" href={selected.paymentLink} data-buy>
+              Buy now<span class="visually-hidden" data-buy-variant>: {selected.name}</span>
+            </a>
+          )
+        }
+
+        {
+          !soldOut && variants.length > 1 && (
+            <noscript>
+              <ul class="noscript-links">
+                {variants
+                  .filter((v) => v.available)
+                  .map((v) => (
+                    <li>
+                      <a href={v.paymentLink}>Buy {v.name}</a>
+                    </li>
+                  ))}
+              </ul>
+            </noscript>
+          )
+        }
+
+        <p class="fine-print">Secure checkout by Stripe. Shipping is calculated at checkout.</p>
+
+        <div class="description">
+          <Content />
+        </div>
+
+        {
+          details.length > 0 && (
+            <>
+              <h2>Details</h2>
+              <ul class="details">
+                {details.map((d) => (
+                  <li>{d}</li>
+                ))}
+              </ul>
+            </>
+          )
+        }
+        {
+          sizing && (
+            <>
+              <h2>Sizing</h2>
+              <p>{sizing}</p>
+            </>
+          )
+        }
+      </div>
+    </div>
+  </section>
+</Base>
+
+<script>
+  const root = document.querySelector<HTMLElement>('[data-product]');
+  if (root) {
+    const shots = [...root.querySelectorAll<HTMLElement>('[data-shot]')];
+    const thumbs = [...root.querySelectorAll<HTMLButtonElement>('[data-thumb]')];
+    const radios = [...root.querySelectorAll<HTMLInputElement>('input[name="variant"]')];
+    const buy = root.querySelector<HTMLAnchorElement>('[data-buy]');
+    const buyVariant = root.querySelector<HTMLElement>('[data-buy-variant]');
+    const label = root.querySelector<HTMLElement>('[data-variant-label]');
+
+    const showPhoto = (index: number) => {
+      if (index < 0 || index >= shots.length) return;
+      shots.forEach((el, i) => (el.hidden = i !== index));
+      thumbs.forEach((t, i) => t.setAttribute('aria-pressed', String(i === index)));
+    };
+
+    const selectVariant = (radio: HTMLInputElement, updateUrl: boolean) => {
+      radio.checked = true;
+      const name = radio.dataset.name ?? '';
+      if (buy && radio.dataset.link) buy.href = radio.dataset.link;
+      if (buyVariant) buyVariant.textContent = `: ${name}`;
+      if (label) label.textContent = name;
+      showPhoto(Number(radio.dataset.photo));
+      if (updateUrl) {
+        const url = new URL(location.href);
+        url.searchParams.set('color', radio.value);
+        history.replaceState(null, '', url);
+      }
+    };
+
+    thumbs.forEach((t) => t.addEventListener('click', () => showPhoto(Number(t.dataset.thumb))));
+    radios.forEach((r) => r.addEventListener('change', () => selectVariant(r, true)));
+
+    // Deep links like /merch/classic-cap?color=navy preselect a color.
+    const requested = new URLSearchParams(location.search).get('color');
+    const match = radios.find((r) => r.value === requested && !r.disabled);
+    if (match) selectVariant(match, false);
+  }
+</script>
+
+<style>
+  .crumbs {
+    display: flex;
+    gap: var(--space-1);
+    color: var(--ash);
+    font-size: var(--step--1);
+  }
+
+  .crumbs a {
+    color: var(--ash);
+    text-decoration: none;
+  }
+
+  .crumbs a:hover {
+    color: var(--porcelain);
+  }
+
+  .product {
+    display: grid;
+    gap: clamp(var(--space-3), 5vw, var(--space-4));
+  }
+
+  @media (min-width: 56rem) {
+    .product {
+      grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+      align-items: start;
+    }
+
+    .gallery {
+      position: sticky;
+      top: var(--space-3);
+    }
+  }
+
+  .shot {
+    aspect-ratio: 1;
+    overflow: hidden;
+    background: var(--carbon);
+    border: 1px solid var(--ash-dark);
+  }
+
+  .shot[hidden] {
+    display: none;
+  }
+
+  .shot :global(img),
+  .thumb :global(img) {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .thumbs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-1);
+    margin-top: var(--space-1);
+    padding: 0;
+    list-style: none;
+  }
+
+  .thumb {
+    display: block;
+    width: 4rem;
+    height: 4rem;
+    padding: 0;
+    overflow: hidden;
+    background: var(--carbon);
+    border: 1px solid var(--ash-dark);
+    cursor: pointer;
+    opacity: 0.55;
+  }
+
+  .thumb[aria-pressed='true'] {
+    border-color: var(--porcelain);
+    opacity: 1;
+  }
+
+  .info h1 {
+    max-width: none;
+    font-size: clamp(2rem, 1.5rem + 2vw, 2.75rem);
+  }
+
+  .price {
+    margin-top: var(--space-1);
+    color: var(--porcelain);
+    font-size: 1.25rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .summary {
+    margin-top: var(--space-2);
+    color: var(--ash);
+  }
+
+  .variants {
+    margin: var(--space-3) 0 0;
+    padding: 0;
+    border: 0;
+  }
+
+  .variants legend {
+    margin-bottom: var(--space-1);
+    padding: 0;
+    color: var(--ash);
+    font-size: var(--step--1);
+  }
+
+  .variants legend span {
+    color: var(--porcelain);
+  }
+
+  .options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-1);
+  }
+
+  .option {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6em;
+    padding: 0.55em 0.9em;
+    border: 1px solid var(--ash-dark);
+    color: var(--ash-light);
+    font-size: var(--step--1);
+    cursor: pointer;
+  }
+
+  .option input {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    opacity: 0;
+    cursor: inherit;
+  }
+
+  .option:has(input:checked) {
+    border-color: var(--porcelain);
+    color: var(--porcelain);
+  }
+
+  .option:has(input:focus-visible) {
+    outline: 1px solid var(--porcelain);
+    outline-offset: 4px;
+  }
+
+  .option.unavailable {
+    color: var(--ash);
+    cursor: not-allowed;
+  }
+
+  .option.unavailable .swatch {
+    opacity: 0.3;
+  }
+
+  .swatch {
+    width: 0.9rem;
+    height: 0.9rem;
+    background: var(--swatch, var(--ash));
+    box-shadow: inset 0 0 0 1px rgb(251 254 249 / 0.25);
+  }
+
+  .buy {
+    display: block;
+    width: 100%;
+    margin-top: var(--space-3);
+    padding-block: 1em;
+    background: var(--porcelain);
+    color: var(--onyx);
+    font-size: var(--step-0);
+    text-align: center;
+  }
+
+  .buy:hover {
+    background: transparent;
+    color: var(--porcelain);
+  }
+
+  .buy-disabled {
+    max-width: none;
+    border: 1px solid var(--ash-dark);
+    background: var(--carbon);
+    color: var(--ash);
+  }
+
+  .buy-disabled:hover {
+    background: var(--carbon);
+    color: var(--ash);
+  }
+
+  .noscript-links {
+    margin-top: var(--space-1);
+  }
+
+  .fine-print {
+    max-width: none;
+    margin-top: var(--space-1);
+    color: var(--ash);
+    font-size: var(--step--1);
+    text-align: center;
+  }
+
+  .description {
+    margin-top: var(--space-3);
+  }
+
+  .info h2 {
+    margin: var(--space-3) 0 var(--space-1);
+    color: var(--ash);
+    font-size: var(--step--1);
+    font-weight: 400;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .details {
+    padding-left: 1.1rem;
+  }
+</style>

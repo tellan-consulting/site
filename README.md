@@ -17,14 +17,25 @@ npm run build    # astro check + build to .vercel/output
 ```
 src/
   pages/        index, team, contact (one .astro file per route)
+  pages/merch/  merch store: listing, product pages, post-checkout thanks
   pages/api/    contact.ts: contact form handler (the only on-demand route)
-  lib/          gmail.ts: sends mail through the Gmail API
+  content/      products/: one markdown file + photos per merch product
+  components/   merch/: product card
+  lib/          gmail.ts: sends mail through the Gmail API; merch.ts: merch helpers
   layouts/      Base.astro: <head>, meta/OG tags, header and footer
   styles/       global.css: design tokens and base styles
   assets/       images and SVGs processed at build time
   consts.ts     site name, titles, meta description, nav links
+  content.config.ts  content collections (merch products)
 public/         copied as-is (favicon, robots.txt, _headers)
+docs/           merch.md: how the store works, Stripe setup, launching and selling out
 ```
+
+## Merch
+
+`/merch` sells hats through Stripe Payment Links, one per color. Products are markdown
+files in `src/content/products/`. Drafts show in dev and Vercel previews only, and the
+Merch nav link appears once a product is published. See [docs/merch.md](docs/merch.md).
 <!-- 
 ## Deployment
 

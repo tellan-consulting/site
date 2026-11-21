@@ -1,0 +1,20 @@
+---
+// Every Stripe Payment Link redirects here after payment:
+//   https://tellan-consulting.com/merch/thanks
+import Base from '../../layouts/Base.astro';
+---
+
+<Base title="Thanks for your order" description="Order received." noindex>
+  <section class="container page">
+    <h1>Thanks for your order.</h1>
+    <p>
+      Your payment went through. Stripe has emailed you a receipt, and we'll send tracking details
+      as soon as your order ships.
+    </p>
+    <p>
+      Questions about your order? <a href="/contact">Get in touch</a> and include the email address
+      you used at checkout.
+    </p>
+    <a class="button" href="/merch">Back to merch</a>
+  </section>
+</Base>
