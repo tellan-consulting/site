@@ -1,5 +1,5 @@
 // @ts-check
-import { defineConfig, envField } from 'astro/config';
+import { defineConfig, envField, fontProviders } from 'astro/config';
 import sitemap from '@astrojs/sitemap';
 import vercel from '@astrojs/vercel';
 
@@ -17,6 +17,27 @@ export default defineConfig({
     prefetchAll: true,
     defaultStrategy: 'hover',
   },
+  // Self-hosted at build time: no request to Google Fonts at runtime.
+  fonts: [
+    {
+      // Titles
+      provider: fontProviders.google(),
+      name: 'Google Sans',
+      cssVariable: '--font-google-sans',
+      weights: [500],
+      styles: ['normal'],
+      subsets: ['latin'],
+    },
+    {
+      // Text
+      provider: fontProviders.google(),
+      name: 'Inter',
+      cssVariable: '--font-inter',
+      weights: [400],
+      styles: ['normal'],
+      subsets: ['latin'],
+    },
+  ],
   image: {
     // Sharp is the default service; listed explicitly for clarity.
     service: { entrypoint: 'astro/assets/services/sharp' },

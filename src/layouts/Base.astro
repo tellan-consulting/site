@@ -1,5 +1,5 @@
 ---
-import { getImage } from 'astro:assets';
+import { Font, getImage } from 'astro:assets';
 import Logo from '../assets/logo.svg';
 import { HOME_TITLE, NAV_LINKS, SITE_DESCRIPTION, SITE_NAME } from '../consts';
 import defaultOgImage from '../assets/og-default.jpg';
@@ -40,8 +40,11 @@ const currentPath = Astro.url.pathname.replace(/\/$/, '') || '/';
     <link rel="canonical" href={canonicalURL} />
     {noindex && <meta name="robots" content="noindex" />}
 
+    <Font cssVariable="--font-google-sans" preload />
+    <Font cssVariable="--font-inter" preload />
+
     <meta name="color-scheme" content="dark" />
-    <meta name="theme-color" content="#0a0a0a" />
+    <meta name="theme-color" content="#0f1111" />
 
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="sitemap" href="/sitemap-index.xml" />
@@ -67,7 +70,7 @@ const currentPath = Astro.url.pathname.replace(/\/$/, '') || '/';
 
     <header class="container site-header">
       <a class="brand" href="/" aria-label={`${SITE_NAME} home`}>
-        <Logo width={68} height={20} aria-hidden="true" />
+        <Logo aria-hidden="true" />
       </a>
       <nav aria-label="Primary">
         <ul>
@@ -104,7 +107,18 @@ const currentPath = Astro.url.pathname.replace(/\/$/, '') || '/';
   }
 
   .brand {
+    /* Logo viewBox is 62.52 × 22.73; size it by height and the width follows. */
+    --logo-height: 29.5px;
     display: inline-block;
+    /* The η's descender (5.27 of the 22.73 units) hangs below the baseline. Pull it out of
+       the header's vertical centring so the letters line up with the nav. */
+    margin-bottom: calc(var(--logo-height) * -5.27 / 22.73);
+  }
+
+  .brand svg {
+    width: auto;
+    height: var(--logo-height);
+    aspect-ratio: 62.52 / 22.73;
   }
 
   nav ul {
@@ -122,7 +136,7 @@ const currentPath = Astro.url.pathname.replace(/\/$/, '') || '/';
 
   nav a:hover,
   nav a[aria-current='page'] {
-    color: var(--white);
+    color: var(--porcelain);
   }
 
   main:focus {

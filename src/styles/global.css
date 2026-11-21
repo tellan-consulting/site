@@ -2,16 +2,24 @@
 :root {
   color-scheme: dark;
 
-  /* Palette — use only these. Contrast vs --black: ash 5.87, ash-light 11.92, white 17.65. */
-  --black: #0a0a0a;
-  --charcoal: #1a1a1a;
-  --ash-dark: #3a3a3a;
-  --ash: #8c8c88;
-  --ash-light: #c9c9c5;
-  --white: #f2f2ef;
+  /* Brand palette. */
+  --onyx: #0f1111;          /* Onyx: background */
+  --carbon: #161918;        /* Carbon Black: raised surfaces (input fields) */
+  --porcelain: #fbfef9;     /* Porcelain: headings, links, controls */
+  --frozen-water: #bae8e8;  /* Frozen Water: accent */
 
-  --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
-    'Noto Sans', sans-serif;
+  /* Neutrals: Porcelain mixed into Onyx at the given %, so every gray stays on-brand.
+     Contrast vs --onyx: ash 5.59, ash-light 12.05, porcelain 18.62. */
+  --ash-dark: #393c3b; /* 18%: borders and rules */
+  --ash: #8a8c8a; /* 52%: secondary text */
+  --ash-light: #cccfcb; /* 80%: body text */
+
+  /* Brand type (loaded in `fonts`, astro.config.mjs; only these weights exist):
+     logo: Google Sans Medium 500, outlined in logo.svg
+     titles: Google Sans Medium 500
+     text: Inter Regular 400 */
+  --font-display: var(--font-google-sans);
+  --font-sans: var(--font-inter);
 
   --step--1: 0.875rem;
   --step-0: 1.0625rem; /* 17px body */
@@ -49,7 +57,7 @@ body {
   min-height: 100dvh;
   display: flex;
   flex-direction: column;
-  background: var(--black);
+  background: var(--onyx);
   color: var(--ash-light);
   font-family: var(--font-sans);
   font-size: var(--step-0);
@@ -75,7 +83,8 @@ textarea {
 /* ---------- Typography ---------- */
 h1 {
   max-width: 18ch;
-  color: var(--white);
+  color: var(--porcelain);
+  font-family: var(--font-display);
   font-size: var(--step-1);
   font-weight: 500;
   line-height: 1.05;
@@ -89,7 +98,7 @@ p {
 }
 
 a {
-  color: var(--white);
+  color: var(--porcelain);
   text-decoration: underline;
   text-decoration-thickness: 1px;
   text-underline-offset: 0.25em;
@@ -97,7 +106,7 @@ a {
 
 /* ---------- Accessibility ---------- */
 :focus-visible {
-  outline: 1px solid var(--white);
+  outline: 1px solid var(--porcelain);
   outline-offset: 4px;
 }
 
@@ -107,8 +116,8 @@ a {
   left: var(--space-1);
   z-index: 100;
   padding: var(--space-1) var(--space-2);
-  background: var(--white);
-  color: var(--black);
+  background: var(--porcelain);
+  color: var(--onyx);
   transform: translateY(-200%);
 }
 
@@ -134,10 +143,10 @@ a {
 .button {
   justify-self: start;
   padding: 0.75em 1.5em;
-  border: 1px solid var(--white);
+  border: 1px solid var(--porcelain);
   border-radius: 0;
   background: transparent;
-  color: var(--white);
+  color: var(--porcelain);
   font-size: var(--step--1);
   line-height: 1.2;
   text-decoration: none;
@@ -145,8 +154,8 @@ a {
 }
 
 .button:hover {
-  background: var(--white);
-  color: var(--black);
+  background: var(--porcelain);
+  color: var(--onyx);
 }
 
 .field {
@@ -163,7 +172,7 @@ a {
 .field textarea {
   width: 100%;
   padding: 0.75em 0.9em;
-  background: var(--charcoal);
+  background: var(--carbon);
   border: 1px solid var(--ash-dark);
   border-radius: 0;
   color: var(--ash-light);
