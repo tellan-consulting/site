@@ -2,8 +2,6 @@ import { getCollection, type CollectionEntry } from 'astro:content';
 import { MERCH_ALLOW_TEST_LINKS, MERCH_SHOW_DRAFTS, VERCEL_ENV } from 'astro:env/server';
 
 export type Product = CollectionEntry<'products'>;
-export type Variant = Product['data']['variants'][number];
-export type Photo = Product['data']['images'][number];
 
 /** Local dev and Vercel preview deploys show drafts and accept Stripe test-mode links. */
 const isPreview = import.meta.env.DEV || VERCEL_ENV === 'preview';
@@ -33,14 +31,11 @@ export async function getProduct(): Promise<Product | undefined> {
   const drafts = products.filter((p) => p.data.status === 'draft').sort((a, b) => a.id.localeCompare(b.id));
   const product = active[0] ?? (showDrafts ? drafts[0] : undefined);
 
-  if (product && !allowTestLinks) {
-    const offenders = product.data.variants.filter((v) => isTestLink(v.paymentLink)).map((v) => v.id);
-    if (offenders.length) {
-      throw new Error(
-        `[merch] Stripe test-mode Payment Links in a production build (${product.id}): ${offenders.join(', ')}.\n` +
-          'Replace them with live links, or set the product back to `status: draft`.',
-      );
-    }
+  if (product && !allowTestLinks && isTestLink(product.data.paymentLink)) {
+    throw new Error(
+      `[merch] ${product.id} uses a Stripe test-mode Payment Link in a production build.\n` +
+        'Replace it with the live link, or set the product back to `status: draft`.',
+    );
   }
 
   return product;
@@ -52,26 +47,4 @@ export function formatPrice(amount: number, currency: string): string {
     currency,
     minimumFractionDigits: Number.isInteger(amount) ? 0 : 2,
   }).format(amount);
-}
-
-export const isSoldOut = (product: Product) => !product.data.variants.some((v) => v.available);
-
-/** First in-stock variant, or the first variant if everything is sold out. */
-export const defaultVariant = (product: Product): Variant =>
-  product.data.variants.find((v) => v.available) ?? product.data.variants[0];
-
-/** Product photos followed by any variant-specific photos, without duplicates. */
-export function galleryPhotos(product: Product): Photo[] {
-  const seen = new Set<string>();
-  const photos: Photo[] = [];
-  for (const photo of [
-    ...product.data.images,
-    ...product.data.variants.flatMap((v) => (v.image ? [v.image] : [])),
-  ]) {
-    if (!seen.has(photo.src.src)) {
-      seen.add(photo.src.src);
-      photos.push(photo);
-    }
-  }
-  return photos;
 }

@@ -32,7 +32,7 @@ docs/           merch.md: how the store works, Stripe setup, launching and selli
 
 ## Merch
 
-`/merch` sells one product (a hat) through Stripe Payment Links, one per color. The
+`/merch` sells one product (a hat) through a single Stripe Payment Link. The
 product is a markdown file in `src/content/products/`. Drafts show in dev and Vercel
 previews only; the page and the footer's **Merchandise** link appear once the product is
 active. See [docs/merch.md](docs/merch.md).

@@ -1,16 +1,16 @@
 # Merch store (`/merch`)
 
-`/merch` sells **one product** (a hat) through Stripe Payment Links. The product is a
-markdown file in an Astro content collection, and **each color gets its own Payment
-Link**. Stripe handles checkout, shipping address and payment, so the store adds no
-server code.
+`/merch` sells **one product** (a hat) through a single Stripe Payment Link. The product
+is a markdown file in an Astro content collection: one photo, a name, a price and the
+link. Stripe handles checkout, shipping address and payment, so the store adds no server
+code and the page ships no JavaScript.
 
 ```
 src/content.config.ts              products collection + schema
 src/content/products/*.md          the product (only one can be `status: active`)
-src/content/products/images/       product photos
+src/content/products/images/       product photo
 src/lib/merch.ts                   picks the product; draft and test-link rules
-src/pages/merch/[...root].astro    /merch          product page: color picker, Buy button
+src/pages/merch/[...root].astro    /merch          the product page: photo, name, price, status, buy
 src/pages/merch/thanks.astro       /merch/thanks   Stripe redirects here after payment (noindex)
 ```
 
@@ -28,10 +28,10 @@ no **Merchandise** link, so the store can sit on `main` before launch.
 Set `MERCH_SHOW_DRAFTS=true` or `MERCH_ALLOW_TEST_LINKS=true` to override this for
 another kind of build.
 
-## Stripe setup (once per color)
+## Stripe setup
 
-Create a Product in the Stripe Dashboard with one Price, then create one Payment Link
-per color with these settings:
+Create a Product in the Stripe Dashboard with one Price, then one Payment Link with
+these settings:
 
 - **Product/price:** the hat, at the same price as `price:` in the markdown file.
   Stripe's price is what customers pay; the site's price is display only.
@@ -49,30 +49,26 @@ sees them. Orders and shipping addresses are under Payments in the Dashboard.
 
 ## Launch the product
 
-1. Add the photos to `src/content/products/images/` and edit the `.md` file. The build
-   rejects missing alt text, non-Stripe links, bad swatch colors and duplicate variant ids.
-2. Paste each color's **live** Payment Link into its `paymentLink:`.
+1. Put the photo in `src/content/products/images/` (square works best) and edit the
+   `.md` file. The build rejects missing alt text and non-Stripe links.
+2. Paste the **live** Payment Link into `paymentLink:`.
 3. Change `status: draft` to `status: active` (or delete the line) and merge.
 
 To swap in a different product later, set the old one to `status: draft` (or delete it)
 in the same change: the build fails if two products are active.
 
-## A color sells out
+## Sold out
 
-1. **Deactivate that color's Payment Link in Stripe.** This takes effect immediately;
-   old tabs and shared links can still reach the link until you do.
-2. Set `available: false` on the variant and merge. The color is shown as sold out and
-   can't be selected, and its link is left out of the page. When every color is
-   unavailable, the product shows "Sold out".
+1. **Deactivate the Payment Link in Stripe.** This takes effect immediately; old tabs
+   and shared links can still reach the link until you do.
+2. Set `available: false` and merge. The page says `status: sold out` and drops the
+   buy link.
 
 To restock, reactivate the link in Stripe and set `available: true`.
 
-## Behaviour notes
+## The page
 
-- Picking a color swaps the photo (a color without its own photo shows the first one),
-  updates the Buy link and sets `?color=<id>` in the URL, so `/merch?color=navy`
-  preselects navy.
-- Without JavaScript, Buy uses the first in-stock color, and a `<noscript>` list links
-  to every in-stock color.
-- The page includes `ProductGroup` structured data (one `Offer` per color, with stock
-  status) and uses the product photo as the social card.
+One square photo, then two lowercase lines: name and price, and below a thin rule the
+status (`available`, `sold out`, or `draft` on previews) and `buy →`, which goes
+straight to Stripe. The page includes `Product` structured data (price and stock
+status) and uses the photo as the social card.
