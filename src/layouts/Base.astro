@@ -107,17 +107,18 @@ const currentPath = Astro.url.pathname.replace(/\/$/, '') || '/';
   }
 
   .brand {
-    /* Logo viewBox is 62.52 × 22.73; size it by height and the width follows. */
-    --logo-height: 29.5px;
+    /* Logo viewBox is 62.52 × 22.73: letters from 0 to the baseline at 17.46, then the
+       η's descender below it. Size it by the letters' cap height. */
+    --logo-cap: 22.66px;
     display: inline-block;
-    /* The η's descender (5.27 of the 22.73 units) hangs below the baseline. Pull it out of
-       the header's vertical centring so the letters line up with the nav. */
-    margin-bottom: calc(var(--logo-height) * -5.27 / 22.73);
+    /* Pull the descender (5.27 units) out of the header's vertical centring so the
+       letters line up with the nav. */
+    margin-bottom: calc(var(--logo-cap) * -5.27 / 17.46);
   }
 
   .brand svg {
     width: auto;
-    height: var(--logo-height);
+    height: calc(var(--logo-cap) * 22.73 / 17.46);
     aspect-ratio: 62.52 / 22.73;
   }
 
@@ -146,7 +147,7 @@ const currentPath = Astro.url.pathname.replace(/\/$/, '') || '/';
   .site-footer {
     max-width: none;
     padding-block: var(--space-3);
-    border-top: 1px solid var(--ash-dark);
+    border-top: 1px solid var(--frozen-water);
     color: var(--ash);
     font-size: var(--step--1);
   }
