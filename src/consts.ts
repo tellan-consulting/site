@@ -9,6 +9,5 @@ export const CONTACT_LIMITS = { name: 200, company: 200, email: 254, message: 50
 
 export const NAV_LINKS = [
   { href: '/team', label: 'Team' },
-  { href: '/merch', label: 'Merch' },
   { href: '/contact', label: 'Contact' },
 ] as const;

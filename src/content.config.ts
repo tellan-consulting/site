@@ -24,7 +24,7 @@ const products = defineCollection({
     return z
       .object({
         name: z.string().min(1),
-        /** One line; used on the listing card and as the meta description. */
+        /** One line; shown under the price and used as the meta description. */
         summary: z.string().min(1).max(160),
         /** Display price in major units (32 = $32.00). Must match the Stripe price. */
         price: z.number().positive(),
@@ -46,10 +46,8 @@ const products = defineCollection({
           .min(1),
         details: z.array(z.string()).default([]),
         sizing: z.string().optional(),
-        /** Drafts show up in `astro dev` only. */
+        /** Only one product can be active. Drafts show in dev and Vercel previews, never in production. */
         status: z.enum(['active', 'draft']).default('active'),
-        /** Lower numbers are listed first. */
-        sortOrder: z.number().int().default(0),
       })
       .superRefine((product, ctx) => {
         const seen = new Set<string>();
