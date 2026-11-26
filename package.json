@@ -10,9 +10,9 @@
     "astro": "astro"
   },
   "dependencies": {
-    "@astrojs/sitemap": "^3.7.4",
-    "@astrojs/vercel": "^11.0.21",
-    "astro": "^7.4.2",
+    "@astrojs/sitemap": "^3.7.6",
+    "@astrojs/vercel": "^11.0.22",
+    "astro": "^7.4.13",
     "google-auth-library": "^11.3.4",
     "nodemailer": "^10.5.0",
     "sharp": "^0.35.5"
